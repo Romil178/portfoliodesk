@@ -120,7 +120,13 @@
           <div><label>Symbol</label><input id="p-sym" placeholder="e.g. INFY" /></div>
           <div><label>Shares</label><input id="p-qty" type="number" placeholder="50" /></div>
           <div><label>Avg buy (₹)</label><input id="p-buy" type="number" placeholder="1600" /></div>
-          <div><label>Current (₹)</label><input id="p-cur" type="number" placeholder="1750" /></div>
+          <div>
+            <label>Current (₹)</label>
+            <div style="display:flex;gap:6px;">
+              <input id="p-cur" type="number" placeholder="1750" style="flex:1;" />
+              <button class="pd-btn pd-btn-ghost" id="price-btn" onclick="fetchPrice()" style="padding:8px 12px;border-radius:10px;font-size:12px;white-space:nowrap;">Get price</button>
+            </div>
+          </div>
           <div style="display:flex;align-items:flex-end;"><button class="pd-btn pd-btn-primary" style="width:100%" onclick="addHolding()">+ Add</button></div>
         </div>
         <div id="p-metrics" class="pd-metrics" style="display:none"></div>
@@ -277,6 +283,23 @@
       else if(abs>=5){ color='#f5e6a3'; cls='warn'; msg=`Drift ${abs.toFixed(1)}% — watch closely`; }
       if(bar) bar.style.background=color;
       if(badge){ badge.className='rebal-badge '+cls; badge.textContent=msg; }
+    }
+
+    async function fetchPrice(){
+      const sym = document.getElementById('p-sym').value.trim().toUpperCase();
+      if(!sym){ alert('Enter a symbol first e.g. RELIANCE.NS'); return; }
+      const btn = document.getElementById('price-btn');
+      btn.textContent = 'Fetching...'; btn.disabled = true;
+      try {
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1d`;
+        const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+        const data = await res.json();
+        const parsed = JSON.parse(data.contents);
+        const price = parsed?.chart?.result?.[0]?.meta?.regularMarketPrice;
+        if(price){ document.getElementById('p-cur').value = price.toFixed(2); btn.textContent = '✓ Done'; }
+        else { btn.textContent = 'Not found'; }
+      } catch(e){ btn.textContent = 'Error'; }
+      setTimeout(()=>{ btn.textContent='Get price'; btn.disabled=false; }, 2000);
     }
 
     document.getElementById('t-date').value=new Date().toISOString().slice(0,10);
