@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PortfolioDesk</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0f2e1e; font-family: 'Space Grotesk', sans-serif; min-height: 100vh; padding: 2rem 1rem; }
+    .pd-wrap { max-width: 960px; margin: 0 auto; background: #1a4731; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.4); }
+    .pd-header { background: #1a4731; padding: 1.2rem 1.8rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #2d6647; flex-wrap: wrap; gap: 12px; }
+    .pd-logo { font-size: 24px; font-weight: 700; color: #f5c8d8; letter-spacing: 1px; }
+    .pd-logo span { color: #f0e6c8; }
+    .pd-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .pd-tab { padding: 7px 18px; font-size: 13px; font-weight: 500; border-radius: 20px; border: 2px solid transparent; cursor: pointer; transition: all 0.15s; font-family: 'Space Grotesk', sans-serif; }
+    .pd-tab.active { background: #f5c8d8; color: #1a4731; border-color: #f5c8d8; }
+    .pd-tab:not(.active) { color: #a8d5b5; border-color: #2d6647; background: transparent; }
+    .pd-tab:hover:not(.active) { border-color: #f5c8d8; color: #f5c8d8; }
+    .pd-body { padding: 1.8rem; }
+    .pd-section { display: none; }
+    .pd-section.active { display: block; }
+    .section-title { font-size: 20px; font-weight: 700; color: #f5c8d8; margin-bottom: 1.2rem; }
+    .hint { font-size: 12px; color: #6aaa82; margin-bottom: 1rem; }
+    .pd-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+    @media(max-width:600px){ .pd-metrics { grid-template-columns: repeat(2,1fr); } .pd-input-row { grid-template-columns: 1fr 1fr !important; } .port-grid { grid-template-columns: 1fr !important; } }
+    .pd-card { border-radius: 14px; padding: 1rem 1.1rem; }
+    .pd-card.pink { background: #f5c8d8; }
+    .pd-card.yellow { background: #f5e6a3; }
+    .pd-card.blue { background: #b8d4f0; }
+    .pd-card.cream { background: #f0e6c8; }
+    .pd-card-label { font-size: 11px; font-weight: 500; color: #1a4731; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .pd-card-val { font-size: 20px; font-weight: 700; color: #1a4731; }
+    .pd-card-val.up { color: #0f6e3a; }
+    .pd-card-val.down { color: #993c1d; }
+    .pd-input-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 1rem; }
+    .pd-input-row label { font-size: 11px; font-weight: 500; color: #a8d5b5; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 5px; }
+    .pd-input-row input, .pd-input-row select { width: 100%; background: #2d6647; border: 1.5px solid #3d7a5a; border-radius: 10px; color: #f0e6c8; font-size: 13px; padding: 8px 10px; font-family: 'Space Grotesk', sans-serif; outline: none; }
+    .pd-input-row input::placeholder { color: #6aaa82; }
+    .pd-input-row input:focus, .pd-input-row select:focus { border-color: #f5c8d8; }
+    .pd-input-row select option { background: #1a4731; }
+    .pd-btn-row { display: flex; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .pd-btn { padding: 9px 22px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Space Grotesk', sans-serif; border: 2px solid transparent; transition: all 0.15s; }
+    .pd-btn-primary { background: #f5c8d8; color: #1a4731; border-color: #f5c8d8; }
+    .pd-btn-primary:hover { background: #f0b0c8; }
+    .pd-btn-ghost { background: transparent; color: #a8d5b5; border-color: #3d7a5a; }
+    .pd-btn-ghost:hover { border-color: #f5c8d8; color: #f5c8d8; }
+    .pd-table-wrap { background: #2d6647; border-radius: 14px; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 500px; }
+    th { text-align: left; padding: 10px 14px; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1.5px solid #3d7a5a; }
+    th:nth-child(1){color:#f5c8d8;} th:nth-child(2){color:#f5e6a3;} th:nth-child(3){color:#b8d4f0;} th:nth-child(4){color:#f0e6c8;} th:nth-child(5){color:#b8f0d4;} th:nth-child(6){color:#f5c8b0;} th:nth-child(7){color:#d4b8f0;} th:nth-child(8){color:#a8d5b5;}
+    td { padding: 11px 14px; border-bottom: 1px solid #3d7a5a; color: #f0e6c8; }
+    tr:last-child td { border-bottom: none; }
+    .up { color: #6ddb9a; }
+    .down { color: #f5956a; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge-buy { background: #b8f0d4; color: #0f6e3a; }
+    .badge-sell { background: #f5c8b0; color: #993c1d; }
+    .sym { font-weight: 700; color: #f5c8d8; }
+    .del-btn { border: none; background: none; cursor: pointer; color: #6aaa82; font-size: 16px; padding: 0 4px; }
+    .del-btn:hover { color: #f5956a; }
+    .empty-state { text-align: center; padding: 2.5rem; color: #f5c8d8; font-size: 13px; font-weight: 500; }
+    .port-grid { display: grid; grid-template-columns: 1fr 220px; gap: 1.5rem; align-items: start; }
+    .chart-wrap { position: relative; height: 200px; margin-top: 0.5rem; }
+    .rebal-item { background: #2d6647; border-radius: 14px; padding: 1rem 1.2rem; margin-bottom: 10px; }
+    .rebal-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
+    .rebal-sym { font-weight: 700; color: #f5c8d8; font-size: 14px; }
+    .rebal-nums { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #a8d5b5; flex-wrap: wrap; }
+    .rebal-nums input { width: 52px; background: #1a4731; border: 1.5px solid #3d7a5a; border-radius: 8px; color: #f0e6c8; font-size: 12px; padding: 4px 6px; font-family: 'Space Grotesk', sans-serif; outline: none; }
+    .rebal-bar-bg { background: #1a4731; border-radius: 6px; height: 8px; overflow: hidden; margin-bottom: 6px; }
+    .rebal-bar-fill { height: 100%; border-radius: 6px; transition: width 0.3s; }
+    .rebal-badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+    .ok { background: #b8f0d4; color: #0f6e3a; }
+    .warn { background: #f5e6a3; color: #7a5c00; }
+    .over { background: #f5c8b0; color: #993c1d; }
+    .footer { text-align: center; padding: 1.5rem; color: #3d7a5a; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="pd-wrap">
+    <div class="pd-header">
+      <div class="pd-logo">Portfolio<span>Desk</span></div>
+      <div class="pd-tabs">
+        <button class="pd-tab active" onclick="pdTab('trades')">Trade log</button>
+        <button class="pd-tab" onclick="pdTab('portfolio')">Portfolio</button>
+        <button class="pd-tab" onclick="pdTab('rebalance')">Rebalancing</button>
+      </div>
+    </div>
+
+    <div class="pd-body">
+
+      <!-- TRADE LOG -->
+      <div id="pd-trades" class="pd-section active">
+        <div class="section-title">Trade log</div>
+        <div class="pd-input-row">
+          <div><label>Symbol</label><input id="t-sym" placeholder="e.g. RELIANCE" /></div>
+          <div><label>Type</label><select id="t-type"><option>BUY</option><option>SELL</option></select></div>
+          <div><label>Qty</label><input id="t-qty" type="number" placeholder="100" /></div>
+          <div><label>Price (₹)</label><input id="t-price" type="number" placeholder="2450" /></div>
+          <div><label>Date</label><input id="t-date" type="date" /></div>
+        </div>
+        <div class="pd-btn-row">
+          <button class="pd-btn pd-btn-primary" onclick="addTrade()">+ Add trade</button>
+          <button class="pd-btn pd-btn-ghost" onclick="clearTrades()">Clear all</button>
+        </div>
+        <div id="t-metrics" class="pd-metrics" style="display:none"></div>
+        <div class="pd-table-wrap">
+          <table>
+            <thead><tr><th>Symbol</th><th>Type</th><th>Qty</th><th>Price</th><th>Value</th><th>Date</th><th></th></tr></thead>
+            <tbody id="t-body"><tr><td colspan="7" class="empty-state">No trades yet — add your first one above</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PORTFOLIO -->
+      <div id="pd-portfolio" class="pd-section">
+        <div class="section-title">Portfolio tracker</div>
+        <div class="pd-input-row">
+          <div><label>Symbol</label><input id="p-sym" placeholder="e.g. INFY" /></div>
+          <div><label>Shares</label><input id="p-qty" type="number" placeholder="50" /></div>
+          <div><label>Avg buy (₹)</label><input id="p-buy" type="number" placeholder="1600" /></div>
+          <div><label>Current (₹)</label><input id="p-cur" type="number" placeholder="1750" /></div>
+          <div style="display:flex;align-items:flex-end;"><button class="pd-btn pd-btn-primary" style="width:100%" onclick="addHolding()">+ Add</button></div>
+        </div>
+        <div id="p-metrics" class="pd-metrics" style="display:none"></div>
+        <div class="port-grid">
+          <div class="pd-table-wrap">
+            <table>
+              <thead><tr><th>Symbol</th><th>Shares</th><th>Avg cost</th><th>Cur price</th><th>Value</th><th>P&L</th><th>Weight</th><th></th></tr></thead>
+              <tbody id="p-body"><tr><td colspan="8" class="empty-state">No holdings yet</td></tr></tbody>
+            </table>
+          </div>
+          <div><div class="chart-wrap"><canvas id="portChart"></canvas></div></div>
+        </div>
+      </div>
+
+      <!-- REBALANCING -->
+      <div id="pd-rebalance" class="pd-section">
+        <div class="section-title">Rebalancing checker</div>
+        <div class="hint">Set your target % for each stock. We flag drift beyond 5%.</div>
+        <div id="rebal-body"><div class="empty-state" style="background:#2d6647;border-radius:14px;padding:2rem;">Add holdings in Portfolio tab first</div></div>
+      </div>
+
+    </div>
+    <div class="footer">PortfolioDesk — built for everyday investors</div>
+  </div>
+
+  <script>
+    let trades=[], holdings=[], portChart=null;
+
+    function pdTab(id){
+      document.querySelectorAll('.pd-tab').forEach((t,i)=>t.classList.toggle('active',['trades','portfolio','rebalance'][i]===id));
+      document.querySelectorAll('.pd-section').forEach(s=>s.classList.remove('active'));
+      document.getElementById('pd-'+id).classList.add('active');
+      if(id==='portfolio') renderPortChart();
+      if(id==='rebalance') renderRebal();
+    }
+
+    function fmt(n){ return '₹'+Number(n).toLocaleString('en-IN',{maximumFractionDigits:2}); }
+    function pct(n){ return (n>=0?'+':'')+n.toFixed(2)+'%'; }
+
+    function addTrade(){
+      const sym=document.getElementById('t-sym').value.trim().toUpperCase();
+      const type=document.getElementById('t-type').value;
+      const qty=parseFloat(document.getElementById('t-qty').value);
+      const price=parseFloat(document.getElementById('t-price').value);
+      const date=document.getElementById('t-date').value||new Date().toISOString().slice(0,10);
+      if(!sym||!qty||!price) return;
+      trades.push({sym,type,qty,price,date});
+      renderTrades();
+      ['t-sym','t-qty','t-price'].forEach(id=>document.getElementById(id).value='');
+    }
+    function delTrade(i){ trades.splice(i,1); renderTrades(); }
+    function clearTrades(){ trades=[]; renderTrades(); }
+    function renderTrades(){
+      const tb=document.getElementById('t-body');
+      const tm=document.getElementById('t-metrics');
+      if(!trades.length){ tb.innerHTML='<tr><td colspan="7" class="empty-state">No trades yet — add your first one above</td></tr>'; tm.style.display='none'; return; }
+      const total=trades.reduce((s,t)=>s+t.qty*t.price,0);
+      const buys=trades.filter(t=>t.type==='BUY').reduce((s,t)=>s+t.qty*t.price,0);
+      const sells=trades.filter(t=>t.type==='SELL').reduce((s,t)=>s+t.qty*t.price,0);
+      tm.style.display='grid';
+      tm.innerHTML=`
+        <div class="pd-card pink"><div class="pd-card-label">Total trades</div><div class="pd-card-val">${trades.length}</div></div>
+        <div class="pd-card cream"><div class="pd-card-label">Total value</div><div class="pd-card-val">${fmt(total)}</div></div>
+        <div class="pd-card yellow"><div class="pd-card-label">Buy volume</div><div class="pd-card-val">${fmt(buys)}</div></div>
+        <div class="pd-card blue"><div class="pd-card-label">Sell volume</div><div class="pd-card-val">${fmt(sells)}</div></div>`;
+      tb.innerHTML=trades.map((t,i)=>`<tr>
+        <td class="sym">${t.sym}</td>
+        <td><span class="badge ${t.type==='BUY'?'badge-buy':'badge-sell'}">${t.type}</span></td>
+        <td>${t.qty}</td><td>${fmt(t.price)}</td><td>${fmt(t.qty*t.price)}</td><td>${t.date}</td>
+        <td><button class="del-btn" onclick="delTrade(${i})">✕</button></td>
+      </tr>`).join('');
+    }
+
+    function addHolding(){
+      const sym=document.getElementById('p-sym').value.trim().toUpperCase();
+      const qty=parseFloat(document.getElementById('p-qty').value);
+      const buy=parseFloat(document.getElementById('p-buy').value);
+      const cur=parseFloat(document.getElementById('p-cur').value);
+      if(!sym||!qty||!buy||!cur) return;
+      const ex=holdings.findIndex(h=>h.sym===sym);
+      if(ex>=0) holdings[ex]={sym,qty,buy,cur};
+      else holdings.push({sym,qty,buy,cur});
+      renderPortfolio();
+      ['p-sym','p-qty','p-buy','p-cur'].forEach(id=>document.getElementById(id).value='');
+    }
+    function delHolding(i){ holdings.splice(i,1); renderPortfolio(); renderPortChart(); renderRebal(); }
+    function renderPortfolio(){
+      const tb=document.getElementById('p-body');
+      const pm=document.getElementById('p-metrics');
+      if(!holdings.length){ tb.innerHTML='<tr><td colspan="8" class="empty-state">No holdings yet</td></tr>'; pm.style.display='none'; return; }
+      const tv=holdings.reduce((s,h)=>s+h.qty*h.cur,0);
+      const tc=holdings.reduce((s,h)=>s+h.qty*h.buy,0);
+      const tpl=tv-tc, tplp=tc?(tpl/tc)*100:0;
+      pm.style.display='grid';
+      pm.innerHTML=`
+        <div class="pd-card pink"><div class="pd-card-label">Portfolio value</div><div class="pd-card-val">${fmt(tv)}</div></div>
+        <div class="pd-card cream"><div class="pd-card-label">Total invested</div><div class="pd-card-val">${fmt(tc)}</div></div>
+        <div class="pd-card ${tpl>=0?'yellow':'blue'}"><div class="pd-card-label">Total P&L</div><div class="pd-card-val ${tpl>=0?'up':'down'}">${fmt(tpl)}</div></div>
+        <div class="pd-card ${tplp>=0?'blue':'pink'}"><div class="pd-card-label">Return</div><div class="pd-card-val ${tplp>=0?'up':'down'}">${pct(tplp)}</div></div>`;
+      tb.innerHTML=holdings.map((h,i)=>{
+        const val=h.qty*h.cur,cost=h.qty*h.buy,pl=val-cost,plp=cost?(pl/cost)*100:0,wt=tv?(val/tv)*100:0;
+        return `<tr>
+          <td class="sym">${h.sym}</td><td>${h.qty}</td>
+          <td>${fmt(h.buy)}</td><td>${fmt(h.cur)}</td><td>${fmt(val)}</td>
+          <td class="${pl>=0?'up':'down'}">${fmt(pl)} <span style="font-size:11px">(${pct(plp)})</span></td>
+          <td>${wt.toFixed(1)}%</td>
+          <td><button class="del-btn" onclick="delHolding(${i})">✕</button></td>
+        </tr>`;
+      }).join('');
+      renderPortChart(); renderRebal();
+    }
+    function renderPortChart(){
+      const canvas=document.getElementById('portChart');
+      if(!canvas) return;
+      if(portChart){ portChart.destroy(); portChart=null; }
+      if(!holdings.length) return;
+      const tv=holdings.reduce((s,h)=>s+h.qty*h.cur,0);
+      const colors=['#f5c8d8','#f5e6a3','#b8d4f0','#f0e6c8','#b8f0d4','#f5c8b0','#d4b8f0','#a8d5b5'];
+      portChart=new Chart(canvas,{
+        type:'doughnut',
+        data:{labels:holdings.map(h=>h.sym),datasets:[{data:holdings.map(h=>parseFloat(((h.qty*h.cur/tv)*100).toFixed(1))),backgroundColor:colors.slice(0,holdings.length),borderWidth:3,borderColor:'#2d6647'}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#a8d5b5',font:{size:11},padding:10}}}}
+      });
+    }
+    function renderRebal(){
+      const el=document.getElementById('rebal-body');
+      if(!holdings.length){ el.innerHTML='<div class="empty-state" style="background:#2d6647;border-radius:14px;padding:2rem;">Add holdings in Portfolio tab first</div>'; return; }
+      const tv=holdings.reduce((s,h)=>s+h.qty*h.cur,0);
+      el.innerHTML=holdings.map((h,i)=>{
+        const actual=tv?(h.qty*h.cur/tv)*100:0;
+        return `<div class="rebal-item">
+          <div class="rebal-top">
+            <span class="rebal-sym">${h.sym}</span>
+            <div class="rebal-nums">
+              <span>Actual: ${actual.toFixed(1)}%</span>
+              <span>Target:</span>
+              <input type="number" id="rb-${i}" value="20" min="0" max="100" step="1" oninput="updRebal(${i},${actual.toFixed(2)})" />
+              <span id="rb-badge-${i}" class="rebal-badge ok">On target</span>
+            </div>
+          </div>
+          <div class="rebal-bar-bg"><div class="rebal-bar-fill" id="rb-bar-${i}" style="width:${Math.min(actual,100).toFixed(1)}%;background:#6ddb9a;"></div></div>
+        </div>`;
+      }).join('');
+      holdings.forEach((_,i)=>{ const tv2=holdings.reduce((s,h)=>s+h.qty*h.cur,0); updRebal(i,tv2?(holdings[i].qty*holdings[i].cur/tv2)*100:0); });
+    }
+    function updRebal(i,actual){
+      const el=document.getElementById(`rb-${i}`); if(!el) return;
+      const target=parseFloat(el.value)||0;
+      const drift=actual-target, abs=Math.abs(drift);
+      const bar=document.getElementById(`rb-bar-${i}`);
+      const badge=document.getElementById(`rb-badge-${i}`);
+      let color='#6ddb9a',cls='ok',msg='On target';
+      if(abs>=10){ color='#f5956a'; cls='over'; msg=`${drift>0?'Overweight':'Underweight'} ${abs.toFixed(1)}% — rebalance`; }
+      else if(abs>=5){ color='#f5e6a3'; cls='warn'; msg=`Drift ${abs.toFixed(1)}% — watch closely`; }
+      if(bar) bar.style.background=color;
+      if(badge){ badge.className='rebal-badge '+cls; badge.textContent=msg; }
+    }
+
+    document.getElementById('t-date').value=new Date().toISOString().slice(0,10);
+  </script>
+</body>
+</html>
